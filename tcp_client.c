@@ -8,64 +8,73 @@
 #include "utils.h"
 
 
-int main (int argc, char *argv[])
-{
-    int socket_desc;
+
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        printf("Usage: ./client <id> <initial_temp>\n");
+        return -1;
+    }
+
+    int id = atoi(argv[1]);
+    float externalTemp = atof(argv[2]);
+    struct msg message;
+
+    int client_socket;
     struct sockaddr_in server_addr;
-    char server_message[100], client_message[100];
 
-    struct msg the_message; 
-    
-    // Command-line input arguments (user provided)
-    int externalIndex = atoi(argv[1]); 
-    float initialTemperature = atof(argv[2]); 
-
-    
-    // Create socket:
-    socket_desc = socket(AF_INET, SOCK_STREAM, 0);
-    
-    if(socket_desc < 0){
+    // Create socket
+    client_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (client_socket < 0) {
         printf("Unable to create socket\n");
         return -1;
     }
-    
-    printf("Socket created successfully\n");
-    
-    // Set port and IP the same as server-side:
+
+    // Server connection details
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(2000);
+    server_addr.sin_port = htons(PORT);
     server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-        
 
-    // Send connection request to server:
-    if(connect(socket_desc, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0){
-        printf("Unable to connect\n");
+    // Connect to server
+    if (connect(client_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+        printf("[Client %d] Unable to connect to server\n", id);
+        close(client_socket);
         return -1;
     }
-    printf("Connected with server successfully\n");
-    printf("--------------------------------------------------------\n\n");
-       
-    // Package to the sent to server 
-    the_message = prepare_message(externalIndex, initialTemperature); 
 
-    // Send the message to server:
-    if(send(socket_desc, (const void *)&the_message, sizeof(the_message), 0) < 0){
-        printf("Unable to send message\n");
-        return -1;
-    }
- 
+    printf("[Client %d] Connected to server. Initial temperature = %.2f\n", id, externalTemp);
 
-    // Receive the server's response:
-    if(recv(socket_desc, (void *)&the_message, sizeof(the_message), 0) < 0){
-        printf("Error while receiving server's msg\n");
-        return -1;
+    int done = 0;
+    int iteration = 0;
+
+    while (!done) {
+        iteration++;
+
+        // Send current temperature to the server
+        message.T = externalTemp;
+        message.done = 0;
+        send(client_socket, &message, sizeof(message), 0);
+
+        // Receive the server's new central temperature and "done" flag
+        if (recv(client_socket, &message, sizeof(message), 0) <= 0) {
+            printf("[Client %d] Error receiving data from server\n", id);
+            break;
+        }
+
+        done = message.done;
+        if (done) {
+            printf("[Client %d] System stabilized. Final external temperature = %.4f\n",
+                   id, externalTemp);
+            break;
+        }
+
+        // Update external temperature using formula
+        externalTemp = (3 * externalTemp + 2 * message.T) / 5.0;
+
+        printf("[Client %d] Iteration %d: Updated external temperature = %.4f\n",
+               id, iteration, externalTemp);
     }
-    
-    printf("--------------------------------------------------------\n");
-    printf("Updated temperature sent by the Central process = %f\n", the_message.T);
-    
-    // Close the socket:
-    close(socket_desc);
-    
+
+    close(client_socket);
+    printf("[Client %d] Connection closed.\n", id);
     return 0;
 }

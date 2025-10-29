@@ -8,14 +8,11 @@
 #include "utils.h"
 
 
-struct msg prepare_message(int i_Index, float i_Temperature)
-{
-    struct msg message; 
-
-    message.Index = i_Index; 
-    message.T = i_Temperature; 
-
+// Simple helper function for building a message struct
+struct msg prepare_message(int i_Index, float i_Temperature) {
+    struct msg message;
+    message.T = i_Temperature;
+    message.done = 0;   // always 0 when preparing a message
     return message;
 }
-
 
