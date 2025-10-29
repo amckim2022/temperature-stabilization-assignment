@@ -5,6 +5,15 @@ Four client processes send their temperatures to a central server, which updates
 
 ---
 
+
+## Compilation Instructions
+Run these commands inside cse 4001 container:
+```bash
+gcc utils.c tcp_server.c -o server
+gcc utils.c tcp_client.c -o client
+
+---
+
 ## screenshots
 Below shows the program running in five terminals and reaching stabilization.
 
