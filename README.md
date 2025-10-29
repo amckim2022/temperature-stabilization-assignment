@@ -17,7 +17,7 @@ gcc utils.c tcp_client.c -o client
 ## screenshots
 Below shows the program running in five terminals and reaching stabilization.
 
-![System Stabilized](images/stabilization.png)
+![System Stabilized](images/stabilizationNEW.png)
 
 
 
