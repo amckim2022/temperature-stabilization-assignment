@@ -1,3 +1,22 @@
+# My Submission Temperature Stabilization Assignment
+
+This program implements a simple temperature stabilization system using **TCP sockets** and multiple processes in Linux.  
+Four client processes send their temperatures to a central server, which updates its own temperature and sends it back until the system stabilizes.
+
+---
+
+## screenshots
+Below shows the program running in five terminals and reaching stabilization.
+
+![System Stabilized](images/stabilization.png)
+
+
+
+
+
+
+
+
 # Temperature stabilization using inter-process communication
 
 ### :warning: This is a Linux/Unix OS assignment. It is not an OS/161 Assignment
